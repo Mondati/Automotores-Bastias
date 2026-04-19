@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Automotores Bastías</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; }
+  img { display: block; max-width: 100%; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #f1f1f1; }
+  ::-webkit-scrollbar-thumb { background: #1a3de0; border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    .hero-grid { grid-template-columns: 1fr !important; }
+    .hero-visual { display: none !important; }
+    .hero-title { font-size: 36px !important; }
+    .nosotros-grid { grid-template-columns: 1fr !important; }
+    .contacto-grid { grid-template-columns: 1fr !important; }
+    .catalog-grid-3 { grid-template-columns: 1fr !important; }
+    .catalog-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+    .nav-links { display: none !important; }
+    .hamburger { display: flex !important; }
+    .mobile-menu { display: flex !important; }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .hero-grid { grid-template-columns: 1fr 1fr !important; }
+    .hero-title { font-size: 40px !important; }
+    .catalog-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ─── THEME ───────────────────────────────────────────────
+const THEMES = {
+  light: {
+    bg: '#ffffff', bg2: '#f4f6fb', bg3: '#eef1f8',
+    text: '#111111', textMuted: '#6b7280', textLight: '#9ca3af',
+    accent: '#1a3de0', accentDark: '#1430b8', accentLight: '#e8edff',
+    border: '#e5e7eb', card: '#ffffff', navBg: '#ffffff',
+    heroGrad: 'linear-gradient(135deg, #f4f6fb 0%, #e8edff 100%)',
+    footerBg: '#0f1f6e', footerText: '#c7d2fe',
+    navText: '#0b1642',
+  },
+  dark: {
+    bg: '#0d0d0d', bg2: '#161616', bg3: '#1f1f1f',
+    text: '#f1f1f1', textMuted: '#9ca3af', textLight: '#6b7280',
+    accent: '#3b5bfb', accentDark: '#2847e8', accentLight: '#1e2a5e',
+    border: '#2a2a2a', card: '#1a1a1a', navBg: '#0d0d0d',
+    heroGrad: 'linear-gradient(135deg, #0d0d0d 0%, #1a1f40 100%)',
+    footerBg: '#050510', footerText: '#818cf8',
+    navText: '#f1f1f1',
+  },
+};
+
+// ─── VEHICLE DATA ─────────────────────────────────────────
+const VEHICLES = [
+  { id:1,  marca:'Toyota',    modelo:'Fortuner SRX 2.8 TDi',       año:2023, km:12000,  tipo:'SUV',       condicion:'Usado', precio_ars:85000000,  precio_usd:72000,  transmision:'Automático' },
+  { id:2,  marca:'Toyota',    modelo:'Hilux 4x4 SR 2.8',           año:2022, km:45000,  tipo:'Pickup',    condicion:'Usado', precio_ars:65000000,  precio_usd:55000,  transmision:'Manual' },
+  { id:3,  marca:'Peugeot',   modelo:'207 1.6 Feline',             año:2013, km:164000, tipo:'Sedan',     condicion:'Usado', precio_ars:13000000,  precio_usd:11000,  transmision:'Manual' },
+  { id:4,  marca:'Peugeot',   modelo:'Partner Confort 5plc',       año:2019, km:149000, tipo:'Camioneta', condicion:'Usado', precio_ars:22000000,  precio_usd:18500,  transmision:'Manual' },
+  { id:5,  marca:'Peugeot',   modelo:'208 GT Line 1.6T',           año:2021, km:38000,  tipo:'Hatchback', condicion:'Usado', precio_ars:38000000,  precio_usd:32000,  transmision:'Automático' },
+  { id:6,  marca:'Chevrolet', modelo:'Onix Plus Premier AT',       año:2022, km:21000,  tipo:'Sedan',     condicion:'Usado', precio_ars:35000000,  precio_usd:29500,  transmision:'Automático' },
+  { id:7,  marca:'Chevrolet', modelo:'S10 High Country 4x4',       año:2021, km:67000,  tipo:'Pickup',    condicion:'Usado', precio_ars:58000000,  precio_usd:49000,  transmision:'Automático' },
+  { id:8,  marca:'Ford',      modelo:'Ranger XLS 3.2 TDi',         año:2020, km:82000,  tipo:'Pickup',    condicion:'Usado', precio_ars:52000000,  precio_usd:44000,  transmision:'Manual' },
+  { id:9,  marca:'Ford',      modelo:'Focus SE 2.0',               año:2018, km:110000, tipo:'Hatchback', condicion:'Usado', precio_ars:20000000,  precio_usd:17000,  transmision:'Manual' },
+  { id:10, marca:'Ford',      modelo:'Bronco Sport Big Bend',      año:2023, km:8000,   tipo:'SUV',       condicion:'Nuevo', precio_ars:90000000,  precio_usd:76000,  transmision:'Automático' },
+  { id:11, marca:'VW',        modelo:'Amarok V6 Highline 4x4',     año:2022, km:34000,  tipo:'Pickup',    condicion:'Usado', precio_ars:88000000,  precio_usd:74000,  transmision:'Automático' },
+  { id:12, marca:'VW',        modelo:'Polo GTS 1.4T',              año:2023, km:5000,   tipo:'Hatchback', condicion:'Nuevo', precio_ars:42000000,  precio_usd:35500,  transmision:'Automático' },
+  { id:13, marca:'Renault',   modelo:'Kangoo Express Confort',     año:2021, km:55000,  tipo:'Comercial', condicion:'Usado', precio_ars:25000000,  precio_usd:21000,  transmision:'Manual' },
+  { id:14, marca:'Fiat',      modelo:'Cronos Drive 1.3',           año:2022, km:28000,  tipo:'Sedan',     condicion:'Usado', precio_ars:26000000,  precio_usd:22000,  transmision:'Manual' },
+  { id:15, marca:'Fiat',      modelo:'Toro Freedom 2.0 TDi',       año:2021, km:61000,  tipo:'Pickup',    condicion:'Usado', precio_ars:48000000,  precio_usd:40500,  transmision:'Automático' },
+  { id:16, marca:'Jeep',      modelo:'Renegade Sport 1.8',         año:2020, km:74000,  tipo:'SUV',       condicion:'Usado', precio_ars:32000000,  precio_usd:27000,  transmision:'Manual' },
+  { id:17, marca:'KTM',       modelo:'Duke 390',                   año:2023, km:3000,   tipo:'Moto',      condicion:'Usado', precio_ars:18000000,  precio_usd:15000,  transmision:'Manual' },
+  { id:18, marca:'KTM',       modelo:'Adventure 390',              año:2022, km:12000,  tipo:'Moto',      condicion:'Usado', precio_ars:22000000,  precio_usd:18500,  transmision:'Manual' },
+  { id:19, marca:'RAM',       modelo:'1500 Laramie 5.7 V8',        año:2022, km:29000,  tipo:'Pickup',    condicion:'Usado', precio_ars:120000000, precio_usd:101000, transmision:'Automático' },
+  { id:20, marca:'Dodge',     modelo:'Journey SE 2.4',             año:2017, km:98000,  tipo:'SUV',       condicion:'Usado', precio_ars:28000000,  precio_usd:23500,  transmision:'Automático' },
+  { id:21, marca:'SEAT',      modelo:'Ibiza FR 1.0 TSI',           año:2021, km:42000,  tipo:'Hatchback', condicion:'Usado', precio_ars:30000000,  precio_usd:25000,  transmision:'Manual' },
+];
+
+const MARCAS = [...new Set(VEHICLES.map(v => v.marca))].sort();
+const AÑOS   = [...new Set(VEHICLES.map(v => v.año))].sort((a,b) => b-a);
+const TIPOS  = [...new Set(VEHICLES.map(v => v.tipo))].sort();
+
+const BRAND_COLORS = {
+  Toyota:'#EB0A1E', Peugeot:'#003087', Chevrolet:'#D4AF37',
+  Ford:'#003399', VW:'#001e50', Renault:'#FFCC00',
+  Fiat:'#b20000', Jeep:'#3d6b35', KTM:'#FF6600',
+  RAM:'#cc0000', Dodge:'#cc0000', SEAT:'#e2000f',
+};
+
+const WHATSAPP_NUMBER = '26122439544';
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola%2C%20me%20interesa%20consultar%20sobre%20un%20veh%C3%ADculo`;
+
+function fmtARS(n) { return '$\u00a0' + n.toLocaleString('es-AR'); }
+function fmtUSD(n) { return 'USD\u00a0' + n.toLocaleString('en-US'); }
+
+// ─── CAR PLACEHOLDER SVG ──────────────────────────────────
+function CarPlaceholder({ brand, color }) {
+  return (
+    <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" style={{width:'100%',height:'100%'}}>
+      <rect width="320" height="180" fill="#f0f2f8"/>
+      <g transform="translate(40,45)">
+        <rect x="20" y="50" width="200" height="55" rx="6" fill="#d1d5db"/>
+        <rect x="40" y="25" width="150" height="45" rx="8" fill="#9ca3af"/>
+        <rect x="55" y="30" width="60" height="34" rx="4" fill={color||'#3b82f6'} opacity=".35"/>
+        <rect x="125" y="30" width="55" height="34" rx="4" fill={color||'#3b82f6'} opacity=".35"/>
+        <circle cx="60" cy="105" r="22" fill="#4b5563"/>
+        <circle cx="60" cy="105" r="14" fill="#9ca3af"/>
+        <circle cx="60" cy="105" r="6" fill="#d1d5db"/>
+        <circle cx="180" cy="105" r="22" fill="#4b5563"/>
+        <circle cx="180" cy="105" r="14" fill="#9ca3af"/>
+        <circle cx="180" cy="105" r="6" fill="#d1d5db"/>
+        <rect x="0" y="62" width="20" height="12" rx="3" fill="#fbbf24" opacity=".8"/>
+        <rect x="220" y="62" width="20" height="12" rx="3" fill="#f87171" opacity=".8"/>
+      </g>
+      <text x="160" y="165" textAnchor="middle" fontFamily="Inter,sans-serif" fontSize="11" fill="#9ca3af">{brand}</text>
+    </svg>
+  );
+}
+
+// ─── VEHICLE CARD ─────────────────────────────────────────
+function VehicleCard({ v, T }) {
+  const [hov, setHov] = useState(false);
+  const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola%2C%20me%20interesa%20el%20${encodeURIComponent(v.marca+' '+v.modelo+' '+v.año)}`;
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: T.card,
+        border: `1px solid ${hov ? T.accent : T.border}`,
+        borderRadius: 14,
+        overflow: 'hidden',
+        transition: 'all .2s',
+        boxShadow: hov ? '0 8px 32px rgba(0,0,0,.12)' : '0 2px 8px rgba(0,0,0,.04)',
+        transform: hov ? 'translateY(-4px)' : 'none',
+        cursor: 'pointer',
+      }}>
+      <div style={{position:'relative', aspectRatio:'16/10', background:T.bg3}}>
+        <CarPlaceholder brand={v.marca} color={BRAND_COLORS[v.marca] || T.accent} />
+        <div style={{
+          position: 'absolute', top: 10, left: 10,
+          background: v.condicion === 'Nuevo' ? T.accent : '#059669',
+          color: '#fff', fontSize: 10, fontWeight: 700,
+          letterSpacing: '.08em', padding: '3px 10px',
+          borderRadius: 20, textTransform: 'uppercase',
+        }}>{v.condicion}</div>
+      </div>
+      <div style={{padding:'16px 18px'}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6}}>
+          <div>
+            <div style={{fontSize:11, fontWeight:700, color:T.accent, letterSpacing:'.07em', textTransform:'uppercase', marginBottom:3}}>{v.marca}</div>
+            <div style={{fontSize:15, fontWeight:700, color:T.text, lineHeight:1.3}}>{v.modelo}</div>
+          </div>
+          <div style={{
+            background: T.bg2, border: `1px solid ${T.border}`,
+            borderRadius: 6, padding: '4px 8px',
+            fontSize: 11, fontWeight: 600, color: T.textMuted, flexShrink: 0,
+          }}>{v.año}</div>
+        </div>
+        <div style={{display:'flex', gap:12, margin:'10px 0', fontSize:12, color:T.textMuted, flexWrap:'wrap'}}>
+          <span>🛣 {v.km.toLocaleString('es-AR')} km</span>
+          <span>⚙ {v.transmision}</span>
+          <span>🏷 {v.tipo}</span>
+        </div>
+        <div style={{borderTop:`1px solid ${T.border}`, paddingTop:12, marginTop:6}}>
+          <div style={{fontSize:17, fontWeight:800, color:T.text}}>{fmtARS(v.precio_ars)}</div>
+          <div style={{fontSize:13, color:T.textMuted, marginTop:2}}>{fmtUSD(v.precio_usd)}</div>
+        </div>
+        <a href={waLink} target="_blank" rel="noopener noreferrer"
+          style={{
+            display: 'block', marginTop: 14,
+            background: T.accent, color: '#fff',
+            textAlign: 'center', padding: '10px',
+            borderRadius: 8, textDecoration: 'none',
+            fontSize: 13, fontWeight: 700,
+            transition: 'background .2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = T.accentDark}
+          onMouseLeave={e => e.currentTarget.style.background = T.accent}>
+          Consultar por WhatsApp
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// ─── FILTER SELECT ────────────────────────────────────────
+function FilterSelect({ label, value, onChange, options, T, placeholder }) {
+  return (
+    <div style={{display:'flex', flexDirection:'column', gap:4}}>
+      <label style={{fontSize:11, fontWeight:600, color:T.textMuted, letterSpacing:'.06em', textTransform:'uppercase'}}>{label}</label>
+      <select value={value} onChange={e => onChange(e.target.value)}
+        style={{
+          padding: '9px 12px', borderRadius: 8,
+          border: `1px solid ${T.border}`,
+          fontSize: 13, background: T.card, color: T.text,
+          cursor: 'pointer', minWidth: 130, outline: 'none',
+        }}>
+        <option value="">{placeholder || 'Todos'}</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+}
+
+// ─── CONTACT FORM ─────────────────────────────────────────
+function ContactForm({ T }) {
+  const [form, setForm] = useState({nombre:'', email:'', telefono:'', mensaje:''});
+  const [sent, setSent] = useState(false);
+  const inputStyle = {
+    width: '100%', padding: '12px 14px', borderRadius: 8,
+    border: `1px solid ${T.border}`, fontSize: 14,
+    background: T.bg2, color: T.text, outline: 'none',
+    transition: 'border-color .2s',
+  };
+  if (sent) return (
+    <div style={{
+      background: T.bg2, border: `1px solid ${T.border}`,
+      borderRadius: 16, padding: 40,
+      textAlign: 'center', display: 'flex',
+      flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      minHeight: 320,
+    }}>
+      <div style={{fontSize:48, marginBottom:16}}>✅</div>
+      <div style={{fontSize:20, fontWeight:700, color:T.text, marginBottom:8}}>¡Mensaje enviado!</div>
+      <div style={{fontSize:14, color:T.textMuted}}>Te contactaremos a la brevedad.</div>
+    </div>
+  );
+  return (
+    <form onSubmit={e => { e.preventDefault(); setSent(true); }}
+      style={{background:T.bg2, border:`1px solid ${T.border}`, borderRadius:16, padding:32, display:'flex', flexDirection:'column', gap:16}}>
+      {[['nombre','Nombre completo','text'],['email','Email','email'],['telefono','Teléfono','tel']].map(([k,pl,t]) => (
+        <input key={k} type={t} placeholder={pl} required
+          value={form[k]} onChange={e => setForm({...form, [k]: e.target.value})}
+          style={inputStyle}
+          onFocus={e => e.target.style.borderColor = T.accent}
+          onBlur={e => e.target.style.borderColor = T.border}
+        />
+      ))}
+      <textarea placeholder="¿En qué vehículo estás interesado?" rows={4} required
+        value={form.mensaje} onChange={e => setForm({...form, mensaje: e.target.value})}
+        style={{...inputStyle, resize:'vertical'}}
+        onFocus={e => e.target.style.borderColor = T.accent}
+        onBlur={e => e.target.style.borderColor = T.border}
+      />
+      <button type="submit" style={{
+        background: T.accent, color: '#fff', border: 'none',
+        cursor: 'pointer', padding: '14px', borderRadius: 8,
+        fontSize: 15, fontWeight: 700, transition: 'background .2s',
+      }}
+        onMouseEnter={e => e.currentTarget.style.background = T.accentDark}
+        onMouseLeave={e => e.currentTarget.style.background = T.accent}>
+        Enviar consulta
+      </button>
+    </form>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────
+function App() {
+  const [darkMode, setDarkMode] = useState(() => {
+    try { return localStorage.getItem('bastias_dark') === 'true'; } catch { return false; }
+  });
+  const T = darkMode ? THEMES.dark : THEMES.light;
+
+  const [scrolled, setScrolled] = useState(false);
+  const [activeNav, setActiveNav] = useState('inicio');
+  const [filterMarca, setFilterMarca] = useState('');
+  const [filterAño, setFilterAño] = useState('');
+  const [filterTipo, setFilterTipo] = useState('');
+  const [filterCondicion, setFilterCondicion] = useState('');
+  const [filterPrecioMax, setFilterPrecioMax] = useState('');
+  const [search, setSearch] = useState('');
+  const [showAll, setShowAll] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', fn);
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.background = T.bg;
+    document.body.style.color = T.text;
+    try { localStorage.setItem('bastias_dark', darkMode); } catch {}
+  }, [darkMode, T]);
+
+  const filtered = VEHICLES.filter(v => {
+    if (filterMarca && v.marca !== filterMarca) return false;
+    if (filterAño && v.año !== parseInt(filterAño)) return false;
+    if (filterTipo && v.tipo !== filterTipo) return false;
+    if (filterCondicion && v.condicion !== filterCondicion) return false;
+    if (filterPrecioMax && v.precio_ars > parseInt(filterPrecioMax) * 1000000) return false;
+    if (search && !`${v.marca} ${v.modelo}`.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const COLS = 3;
+  const displayed = showAll ? filtered : filtered.slice(0, COLS * 3);
+  const hasActiveFilters = filterMarca || filterAño || filterTipo || filterCondicion || filterPrecioMax || search;
+
+  const navBg = scrolled ? T.navBg : 'transparent';
+  const navTextColor = darkMode ? T.text : (scrolled ? T.navText : '#0b1642');
+
+  const NAV_ITEMS = [
+    { key: 'inicio', label: 'Inicio' },
+    { key: 'catalogo', label: 'Catálogo' },
+    { key: 'nosotros', label: 'Nosotros' },
+    { key: 'contacto', label: 'Contacto' },
+  ];
+
+  return (
+    <div style={{background: T.bg, color: T.text, minHeight: '100vh', fontFamily: "'Inter', sans-serif"}}>
+
+      {/* ── NAV ── */}
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        background: navBg,
+        borderBottom: scrolled ? `1px solid ${T.border}` : 'none',
+        boxShadow: scrolled ? '0 2px 16px rgba(0,0,0,.06)' : 'none',
+        transition: 'all .25s ease',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+      }}>
+        <div style={{maxWidth:1280, margin:'0 auto', padding:'0 32px', height:70, display:'flex', alignItems:'center', justifyContent:'space-between'}}>
+          <a href="#inicio" style={{display:'flex', alignItems:'center'}}>
+            <img src="logo.png" alt="Automotores Bastías" style={{height:44, objectFit:'contain'}} />
+          </a>
+
+          {/* Desktop nav */}
+          <div className="nav-links" style={{display:'flex', gap:32, alignItems:'center'}}>
+            {NAV_ITEMS.map(({key, label}) => (
+              <a key={key} href={`#${key}`}
+                onClick={() => setActiveNav(key)}
+                style={{
+                  textDecoration: 'none', fontSize: 14, fontWeight: 500,
+                  color: activeNav === key ? T.accent : navTextColor,
+                  borderBottom: activeNav === key ? `2px solid ${T.accent}` : '2px solid transparent',
+                  paddingBottom: 2, transition: 'color .2s', letterSpacing: '.03em',
+                }}>
+                {label}
+              </a>
+            ))}
+            <button
+              onClick={() => setDarkMode(d => !d)}
+              title={darkMode ? 'Modo clásico' : 'Modo oscuro'}
+              style={{
+                background: darkMode ? 'rgba(255,255,255,.1)' : T.bg2,
+                border: `1px solid ${T.border}`,
+                borderRadius: 8, width: 38, height: 38,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'all .2s', flexShrink: 0,
+              }}>
+              {darkMode
+                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={navTextColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              }
+            </button>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button className="hamburger" style={{display:'none', background:'none', border:'none', cursor:'pointer', padding:4, flexDirection:'column', gap:5}}
+            onClick={() => setMobileMenuOpen(o => !o)}>
+            <span style={{display:'block', width:22, height:2, background:navTextColor, transition:'all .2s'}} />
+            <span style={{display:'block', width:22, height:2, background:navTextColor, transition:'all .2s'}} />
+            <span style={{display:'block', width:22, height:2, background:navTextColor, transition:'all .2s'}} />
+          </button>
+        </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="mobile-menu" style={{
+            display: 'flex', flexDirection: 'column',
+            background: T.navBg, borderTop: `1px solid ${T.border}`,
+            padding: '12px 24px 20px',
+          }}>
+            {NAV_ITEMS.map(({key, label}) => (
+              <a key={key} href={`#${key}`}
+                onClick={() => { setActiveNav(key); setMobileMenuOpen(false); }}
+                style={{
+                  textDecoration: 'none', fontSize: 15, fontWeight: 500,
+                  color: activeNav === key ? T.accent : T.text,
+                  padding: '10px 0',
+                  borderBottom: `1px solid ${T.border}`,
+                }}>
+                {label}
+              </a>
+            ))}
+            <button onClick={() => setDarkMode(d => !d)} style={{
+              marginTop: 12, background: T.bg2, border: `1px solid ${T.border}`,
+              borderRadius: 8, padding: '10px 16px',
+              fontSize: 14, color: T.text, cursor: 'pointer', textAlign: 'left',
+            }}>
+              {darkMode ? '☀️ Modo clásico' : '🌙 Modo oscuro'}
+            </button>
+          </div>
+        )}
+      </nav>
+
+      {/* ── HERO ── */}
+      <section id="inicio" style={{
+        background: T.heroGrad,
+        minHeight: '92vh', display: 'flex', alignItems: 'center',
+        paddingTop: 80,
+      }}>
+        <div className="hero-grid" style={{
+          maxWidth: 1280, margin: '0 auto', padding: '60px 32px',
+          width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr',
+          gap: 60, alignItems: 'center',
+        }}>
+          <div>
+            <div style={{
+              display: 'inline-block', background: T.accent, color: '#fff',
+              fontSize: 11, fontWeight: 700, letterSpacing: '.12em',
+              textTransform: 'uppercase', padding: '5px 14px',
+              borderRadius: 20, marginBottom: 24,
+            }}>Concesionaria Oficial</div>
+            <h1 className="hero-title" style={{
+              fontSize: 52, fontWeight: 800, lineHeight: 1.1,
+              color: T.text, marginBottom: 20,
+            }}>
+              Tu próximo vehículo<br/>
+              <span style={{color: T.accent}}>te está esperando.</span>
+            </h1>
+            <p style={{
+              fontSize: 18, color: T.textMuted,
+              marginBottom: 36, lineHeight: 1.65, maxWidth: 440,
+            }}>
+              Vehículos nuevos y usados seleccionados. Las mejores marcas, atención personalizada y financiación disponible.
+            </p>
+            <div style={{display:'flex', gap:16, flexWrap:'wrap'}}>
+              <a href="#catalogo" style={{
+                background: T.accent, color: '#fff',
+                padding: '14px 32px', borderRadius: 8,
+                textDecoration: 'none', fontWeight: 700, fontSize: 15,
+                transition: 'background .2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = T.accentDark}
+                onMouseLeave={e => e.currentTarget.style.background = T.accent}>
+                Ver catálogo
+              </a>
+              <a href="#contacto" style={{
+                background: 'transparent', color: T.accent,
+                border: `2px solid ${T.accent}`,
+                padding: '14px 32px', borderRadius: 8,
+                textDecoration: 'none', fontWeight: 600, fontSize: 15,
+              }}>
+                Contactarnos
+              </a>
+            </div>
+            <div style={{display:'flex', gap:40, marginTop:48, flexWrap:'wrap'}}>
+              {[['21+','Marcas'],['200+','Vehículos'],['15+','Años de experiencia']].map(([n,l]) => (
+                <div key={l}>
+                  <div style={{fontSize:28, fontWeight:800, color:T.accent}}>{n}</div>
+                  <div style={{fontSize:12, color:T.textMuted, marginTop:2}}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="hero-visual" style={{display:'flex', justifyContent:'flex-end', alignItems:'center'}}>
+            <div style={{
+              width: '100%', maxWidth: 520, aspectRatio: '16/10',
+              background: T.bg3, borderRadius: 20, overflow: 'hidden',
+              position: 'relative', border: `1px solid ${T.border}`,
+            }}>
+              <CarPlaceholder brand="Toyota Fortuner" color={T.accent} />
+              <div style={{
+                position: 'absolute', bottom: 16, left: 16,
+                background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(8px)',
+                borderRadius: 8, padding: '8px 14px', color: '#fff',
+              }}>
+                <div style={{fontSize:11, opacity:.7, marginBottom:2}}>Destacado</div>
+                <div style={{fontSize:14, fontWeight:700}}>Toyota Fortuner SRX 2023</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MARCAS STRIP ── */}
+      <section style={{
+        borderBottom: `1px solid ${T.border}`,
+        borderTop: `1px solid ${T.border}`,
+        background: T.bg2, padding: '24px 32px', overflow: 'hidden',
+      }}>
+        <div style={{
+          maxWidth: 1280, margin: '0 auto',
+          display: 'flex', gap: 32, alignItems: 'center',
+          justifyContent: 'center', flexWrap: 'wrap',
+        }}>
+          {MARCAS.map(m => (
+            <button key={m}
+              onClick={() => {
+                setFilterMarca(m === filterMarca ? '' : m);
+                setShowAll(false);
+                document.getElementById('catalogo').scrollIntoView({block:'start'});
+              }}
+              style={{
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                fontSize: 13, fontWeight: 600, letterSpacing: '.05em',
+                color: filterMarca === m ? T.accent : T.textMuted,
+                padding: '4px 0',
+                borderBottom: filterMarca === m ? `2px solid ${T.accent}` : '2px solid transparent',
+                transition: 'color .2s',
+              }}>
+              {m}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CATÁLOGO ── */}
+      <section id="catalogo" style={{padding:'72px 32px', background: T.bg}}>
+        <div style={{maxWidth:1280, margin:'0 auto'}}>
+          <div style={{marginBottom:40, display:'flex', justifyContent:'space-between', alignItems:'flex-end', flexWrap:'wrap', gap:16}}>
+            <div>
+              <div style={{fontSize:12, fontWeight:700, color:T.accent, letterSpacing:'.1em', textTransform:'uppercase', marginBottom:8}}>Catálogo</div>
+              <h2 style={{fontSize:36, fontWeight:800, color:T.text}}>Vehículos disponibles</h2>
+              <p style={{color:T.textMuted, marginTop:6, fontSize:15}}>
+                {filtered.length} vehículo{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <input
+              placeholder="Buscar por marca o modelo…"
+              value={search}
+              onChange={e => { setSearch(e.target.value); setShowAll(false); }}
+              style={{
+                padding: '11px 16px', borderRadius: 8,
+                border: `1px solid ${T.border}`,
+                fontSize: 14, width: 260,
+                background: T.bg2, color: T.text, outline: 'none',
+              }}
+            />
+          </div>
+
+          {/* Filters */}
+          <div style={{
+            background: T.bg2, border: `1px solid ${T.border}`,
+            borderRadius: 12, padding: '20px 24px', marginBottom: 36,
+            display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end',
+          }}>
+            <FilterSelect label="Marca" value={filterMarca} onChange={v => { setFilterMarca(v); setShowAll(false); }} options={MARCAS} T={T} />
+            <FilterSelect label="Año" value={filterAño} onChange={v => { setFilterAño(v); setShowAll(false); }} options={AÑOS.map(String)} T={T} />
+            <FilterSelect label="Tipo" value={filterTipo} onChange={v => { setFilterTipo(v); setShowAll(false); }} options={TIPOS} T={T} />
+            <FilterSelect label="Condición" value={filterCondicion} onChange={v => { setFilterCondicion(v); setShowAll(false); }} options={['Nuevo','Usado']} T={T} />
+            <FilterSelect label="Precio máx (M ARS)" value={filterPrecioMax} onChange={v => { setFilterPrecioMax(v); setShowAll(false); }}
+              options={['10','20','30','50','70','100','150']} T={T} placeholder="Sin límite" />
+            {hasActiveFilters && (
+              <button
+                onClick={() => { setFilterMarca(''); setFilterAño(''); setFilterTipo(''); setFilterCondicion(''); setFilterPrecioMax(''); setSearch(''); setShowAll(false); }}
+                style={{
+                  background: 'transparent', border: `1px solid ${T.border}`,
+                  borderRadius: 8, padding: '9px 16px', cursor: 'pointer',
+                  fontSize: 13, color: T.textMuted, alignSelf: 'flex-end',
+                }}>
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+
+          {/* Grid */}
+          {displayed.length === 0 ? (
+            <div style={{textAlign:'center', padding:'60px 0', color:T.textMuted}}>
+              <div style={{fontSize:48, marginBottom:12}}>🔍</div>
+              <div style={{fontSize:18, fontWeight:600, marginBottom:6}}>Sin resultados</div>
+              <div style={{fontSize:14}}>Probá con otros filtros</div>
+            </div>
+          ) : (
+            <div className="catalog-grid-3" style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+              gap: 24,
+            }}>
+              {displayed.map(v => <VehicleCard key={v.id} v={v} T={T} />)}
+            </div>
+          )}
+
+          {!showAll && filtered.length > COLS * 3 && (
+            <div style={{textAlign:'center', marginTop:48}}>
+              <button onClick={() => setShowAll(true)} style={{
+                background: T.accent, color: '#fff', border: 'none',
+                cursor: 'pointer', padding: '14px 40px',
+                borderRadius: 8, fontSize: 15, fontWeight: 700,
+                transition: 'background .2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = T.accentDark}
+                onMouseLeave={e => e.currentTarget.style.background = T.accent}>
+                Ver todos ({filtered.length})
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── NOSOTROS ── */}
+      <section id="nosotros" style={{padding:'80px 32px', background:T.bg2}}>
+        <div className="nosotros-grid" style={{
+          maxWidth: 1280, margin: '0 auto',
+          display: 'grid', gridTemplateColumns: '1fr 1fr',
+          gap: 72, alignItems: 'center',
+        }}>
+          <div>
+            <div style={{fontSize:12, fontWeight:700, color:T.accent, letterSpacing:'.1em', textTransform:'uppercase', marginBottom:12}}>Quiénes somos</div>
+            <h2 style={{fontSize:38, fontWeight:800, color:T.text, marginBottom:20, lineHeight:1.2}}>
+              Más de 15 años<br/>en el mercado automotor
+            </h2>
+            <p style={{color:T.textMuted, fontSize:16, lineHeight:1.75, marginBottom:16}}>
+              Automotores Bastías es una concesionaria familiar con sede en Argentina, especializada en la comercialización de vehículos nuevos y usados de las mejores marcas del mercado.
+            </p>
+            <p style={{color:T.textMuted, fontSize:16, lineHeight:1.75}}>
+              Nuestro compromiso es brindar una atención personalizada, transparencia en cada operación y acompañamiento durante todo el proceso de compra.
+            </p>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, marginTop:36}}>
+              {[
+                ['Vehículos 0km',       'Siempre con los últimos modelos'],
+                ['Usados certificados', 'Revisión técnica garantizada'],
+                ['Financiación',        'Planes accesibles y personalizados'],
+                ['Postventa',           'Te acompañamos después de la compra'],
+              ].map(([t,d]) => (
+                <div key={t} style={{background:T.card, border:`1px solid ${T.border}`, borderRadius:10, padding:'16px 18px'}}>
+                  <div style={{width:28, height:3, background:T.accent, borderRadius:2, marginBottom:10}} />
+                  <div style={{fontWeight:700, fontSize:14, color:T.text, marginBottom:4}}>{t}</div>
+                  <div style={{fontSize:12, color:T.textMuted}}>{d}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{display:'flex', flexDirection:'column', gap:20}}>
+            <div style={{
+              background: T.card, border: `1px solid ${T.border}`,
+              borderRadius: 16, padding: 28,
+              position: 'relative', overflow: 'hidden',
+            }}>
+              <div style={{position:'absolute', top:0, left:0, width:4, height:'100%', background:T.accent, borderRadius:'2px 0 0 2px'}} />
+              <div style={{fontSize:40, fontWeight:800, color:T.accent, marginBottom:4}}>+200</div>
+              <div style={{fontWeight:600, color:T.text}}>vehículos en stock</div>
+              <div style={{fontSize:13, color:T.textMuted, marginTop:4}}>Renovados constantemente</div>
+            </div>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:20}}>
+              {[['09:00–13:00','Turno mañana'],['17:00–21:00','Turno tarde']].map(([h,l]) => (
+                <div key={h} style={{background:T.card, border:`1px solid ${T.border}`, borderRadius:12, padding:20}}>
+                  <div style={{fontWeight:700, fontSize:18, color:T.text}}>{h}</div>
+                  <div style={{fontSize:12, color:T.textMuted, marginTop:4}}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CONTACTO ── */}
+      <section id="contacto" style={{padding:'80px 32px', background:T.bg}}>
+        <div className="contacto-grid" style={{
+          maxWidth: 1280, margin: '0 auto',
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72,
+        }}>
+          <div>
+            <div style={{fontSize:12, fontWeight:700, color:T.accent, letterSpacing:'.1em', textTransform:'uppercase', marginBottom:12}}>Contacto</div>
+            <h2 style={{fontSize:38, fontWeight:800, color:T.text, marginBottom:16}}>Hablemos</h2>
+            <p style={{color:T.textMuted, fontSize:16, marginBottom:36}}>
+              Completá el formulario y uno de nuestros asesores se pondrá en contacto a la brevedad.
+            </p>
+            <div style={{display:'flex', flexDirection:'column', gap:14, marginBottom:28}}>
+              {[
+                ['✉', 'd.automotoresbastias@gmail.com'],
+                ['✉', 'contacto@automotoresbastias.com.ar'],
+                ['🕐', '09:00 a 13:00 / 17:00 a 21:00'],
+              ].map(([ico,txt]) => (
+                <div key={txt} style={{display:'flex', gap:12, alignItems:'center', color:T.textMuted, fontSize:14}}>
+                  <span>{ico}</span><span>{txt}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex', gap:14}}>
+              {[['F','Facebook'],['I','Instagram'],['Y','YouTube']].map(([letter, name]) => (
+                <a key={name} href="#" aria-label={name} style={{
+                  width: 40, height: 40, borderRadius: 8,
+                  background: T.bg2, border: `1px solid ${T.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  textDecoration: 'none', fontSize: 13, color: T.textMuted, fontWeight: 600,
+                  transition: 'all .2s',
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.background = T.accentLight; e.currentTarget.style.color = T.accent; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = T.bg2; e.currentTarget.style.color = T.textMuted; }}>
+                  {letter}
+                </a>
+              ))}
+            </div>
+          </div>
+          <ContactForm T={T} />
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{background:T.footerBg, color:T.footerText, padding:'40px 32px'}}>
+        <div style={{
+          maxWidth: 1280, margin: '0 auto',
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', flexWrap: 'wrap', gap: 20,
+        }}>
+          <img src="logo.png" alt="Automotores Bastías" style={{height:36, filter:'brightness(0) invert(1)', opacity:.85}} />
+          <div style={{fontSize:13, opacity:.6}}>© 2026 Automotores Bastías. Todos los derechos reservados.</div>
+          <div style={{display:'flex', gap:20, fontSize:13, flexWrap:'wrap'}}>
+            {[['Inicio','inicio'],['Catálogo','catalogo'],['Nosotros','nosotros'],['Contacto','contacto']].map(([label, anchor]) => (
+              <a key={anchor} href={`#${anchor}`} style={{color:T.footerText, textDecoration:'none', opacity:.7}}>{label}</a>
+            ))}
+          </div>
+        </div>
+      </footer>
+
+      {/* ── WHATSAPP BUTTON ── */}
+      <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer"
+        style={{
+          position: 'fixed', bottom: 24, right: 24, zIndex: 200,
+          width: 58, height: 58, borderRadius: '50%',
+          background: '#25D366',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 20px rgba(37,211,102,.45)',
+          textDecoration: 'none', transition: 'transform .2s, box-shadow .2s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform='scale(1.1)'; e.currentTarget.style.boxShadow='0 6px 28px rgba(37,211,102,.55)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 4px 20px rgba(37,211,102,.45)'; }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+      </a>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
